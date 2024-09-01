@@ -11,25 +11,26 @@ const Home = () => {
   const [searchQuery, setSearchQuery] = useState(""); // State for search input
   const [suspendedFilter, setSuspendedFilter] = useState(""); // State for suspended filter
 
-  useEffect(() => {
-    const fetchAllUsers = async () => {
-      try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_URI}/user`
-        );
-        if (!response.ok) {
-          throw new Error("Failed to fetch users");
-        }
-        const allUsersData = await response.json();
-        setUsers(allUsersData.data); // Assuming the fetched data is in the `data` key
-
-        categorizeUsers(allUsersData.data);
-      } catch (error) {
-        console.error("Error fetching users:", error);
+  // Function to fetch all users
+  const fetchAllUsers = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URI}/user`
+      );
+      if (!response.ok) {
+        throw new Error("Failed to fetch users");
       }
-    };
+      const allUsersData = await response.json();
+      setUsers(allUsersData.data); // Assuming the fetched data is in the data key
 
-    fetchAllUsers();
+      categorizeUsers(allUsersData.data);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchAllUsers(); // Fetch users when component mounts
   }, []);
 
   const categorizeUsers = (usersData) => {
@@ -61,13 +62,9 @@ const Home = () => {
         throw new Error("Failed to suspend user");
       }
 
-      setUsers((prevUsers) =>
-        prevUsers.map((user) =>
-          user._id === userId ? { ...user, suspended: !user.suspended } : user
-        )
-      );
+      // Re-fetch the users to get the latest state
+      await fetchAllUsers(); // Call fetchAllUsers to update the state
 
-      categorizeUsers(users); // Re-categorize users after suspension
     } catch (error) {
       console.error("Error suspending user:", error);
     }
