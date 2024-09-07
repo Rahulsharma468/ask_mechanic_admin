@@ -4,8 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 const AddUser = () => {
-
-  const router = useRouter()
+  const router = useRouter();
   const [formData, setFormData] = useState({
     userPhoneNumber: "",
     userType: "",
@@ -14,17 +13,27 @@ const AddUser = () => {
     WorkshopAddress: "",
     experience: 0,
     suspended: false,
+    specialCategory: [], // Added field
   });
 
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
   const handleChange = (e) => {
-    const { name, value, type } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: type === 'checkbox' ? e.target.checked : value,
-    }));
+    const { name, value, type, checked } = e.target;
+    if (name === "specialCategory") {
+      setFormData((prevData) => {
+        const newCategories = checked
+          ? [...prevData.specialCategory, value]
+          : prevData.specialCategory.filter((category) => category !== value);
+        return { ...prevData, specialCategory: newCategories };
+      });
+    } else {
+      setFormData((prevData) => ({
+        ...prevData,
+        [name]: type === 'checkbox' ? checked : value,
+      }));
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -55,6 +64,7 @@ const AddUser = () => {
         WorkshopAddress: "",
         experience: 0,
         suspended: false,
+        specialCategory: [], // Reset added field
       });
       router.push("/home");
     } catch (err) {
@@ -157,6 +167,25 @@ const AddUser = () => {
             <option value={false}>No</option>
             <option value={true}>Yes</option>
           </select>
+        </div>
+
+        <div className="text-white">
+          <label className="block text-white">Special Categories</label>
+          <div className="flex flex-wrap gap-2">
+            {["Bike", "Towing", "Car", "Water Wash", "Spa"].map((category) => (
+              <label key={category} className="flex items-center">
+                <input
+                  type="checkbox"
+                  name="specialCategory"
+                  value={category}
+                  checked={formData.specialCategory.includes(category)}
+                  onChange={handleChange}
+                  className="mr-2"
+                />
+                {category}
+              </label>
+            ))}
+          </div>
         </div>
 
         <button
