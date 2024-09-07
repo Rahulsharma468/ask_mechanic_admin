@@ -52,3 +52,42 @@ export async function POST(req) {
     );
   }
 }
+
+export async function PUT(req) {
+  try {
+    await connectDB();
+    const { userId, updates } = await req.json(); // Parse the request body to get the userId and updates
+
+    // Validate if the userId and updates are provided
+    if (!userId || !updates) {
+      return NextResponse.json(
+        { message: "User ID and updates are required" },
+        { status: 400 }
+      );
+    }
+
+    // Update the user in the database
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { $set: updates },
+      { new: true } // Return the updated document
+    );
+
+    if (!updatedUser) {
+      return NextResponse.json(
+        { message: "User not found" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(
+      { message: "User Updated Successfully", data: updatedUser },
+      { status: 200 }
+    );
+  } catch (err) {
+    return NextResponse.json(
+      { message: "User Update Failed", error: err.message },
+      { status: 400 }
+    );
+  }
+}
